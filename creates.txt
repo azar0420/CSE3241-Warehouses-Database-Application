@@ -1,0 +1,181 @@
+CREATE TABLE WAREHOUSE (
+    City            CHAR (30)    NOT NULL,
+    Address         VARCHAR (30) NOT NULL,
+    PhoneNumber     CHAR (10)    NOT NULL,
+    ManagerName     VARCHAR (3)  NOT NULL,
+    StorageCapacity INT,
+    DroneCapacity   INT,
+    
+    PRIMARY KEY(Address)
+);
+
+CREATE TABLE MODEL (
+    ModelNumber  INT       NOT NULL,
+    Year         INT       NOT NULL,
+    Manufacturer CHAR (30) NOT NULL,
+    Name         CHAR (30) NOT NULL,
+    
+    PRIMARY KEY (ModelNumber)
+);
+
+CREATE TABLE SUPPLIER (
+    SupplierName   CHAR (30)    NOT NULL,
+    Address        VARCHAR (30) NOT NULL,
+    PhoneNumber    CHAR (10)    NOT NULL,
+    Representative CHAR (30),
+    
+    PRIMARY KEY(SupplierName, Address)
+);
+
+CREATE TABLE DRONE (
+    Location        VARCHAR (100) NOT NULL,
+    FleetID         INT           NOT NULL,
+    SerialNumber    INT           NOT NULL,
+    WeightCapacity  INT           NOT NULL,
+    VolumeCapacity  INT           NOT NULL,
+    WarrantyExpDate DATE,
+    MaxSpeed        INT,
+    ActiveStatus    INT           NOT NULL
+                                  DEFAULT 0,
+    StockCount      INT           NOT NULL,
+    ModelNumber     INT           NOT NULL,
+
+    PRIMARY KEY(FleetID),
+    FOREIGN KEY(ModelNumber) REFERENCES MODEL(ModelNumber)    
+
+    CHECK (ActiveStatus == 0 OR 
+           ActiveStatus == 1) 
+);
+
+CREATE TABLE EQUIPMENT (
+    Location      VARCHAR (100) NOT NULL,
+    Description   VARCHAR (100) NOT NULL,
+    SerialNumber  INT           NOT NULL,
+    InventoryID   INT           NOT NULL,
+    ArrivalDate   DATE          NOT NULL,
+    FleetID       INT           NOT NULL,
+    EquipmentType VARCHAR (30)  NOT NULL,
+    Weight        INT           NOT NULL,
+    Size          INT           NOT NULL,
+    StockCount    INT           NOT NULL,
+    ModelNumber   INT           NOT NULL,
+    
+    PRIMARY KEY(SerialNumber),
+    FOREIGN KEY(ModelNumber) REFERENCES MODEL(ModelNumber),  
+    FOREIGN KEY(FleetID) REFERENCES DRONE(FleetID) 
+);
+
+CREATE TABLE COMMUNITYMEMBER (
+    MemberID          INT          NOT NULL,
+    ActiveStatus      INT          NOT NULL
+                                   DEFAULT 0,
+    Name              VARCHAR (30) NOT NULL,
+    Address           VARCHAR (30),
+    PhoneNumber       CHAR (30)    NOT NULL,
+    Email             CHAR (30)    NOT NULL,
+    StartDate         DATE         NOT NULL,
+    WarehouseDistance INT          NOT NULL,
+    WarehouseAddress  VARCHAR (30) NOT NULL,
+    CHECK (ActiveStatus == 0 OR 
+           ActiveStatus == 1) 
+           
+    PRIMARY KEY(MemberID),
+    FOREIGN KEY(WarehouseAddress) REFERENCES WAREHOUSE(Address)
+);
+
+CREATE TABLE STORES (
+    Address     CHAR (30) NOT NULL,
+    FleetID     INT       NOT NULL,
+    InventoryID INT       NOT NULL,
+    
+    PRIMARY KEY(Address, FleetID, InventoryID),
+    FOREIGN KEY(Address) REFERENCES WAREHOUSE(Address),
+    FOREIGN KEY(FleetID) REFERENCES DRONE(FleetID),
+    FOREIGN KEY (InventoryID) REFERENCES EQUIPMENT(InventoryID)
+);
+
+CREATE TABLE WAREHOUSEORDER (
+    ElementTypes         VARCHAR (100) NOT NULL,
+    ArrivalStatus        INT           NOT NULL
+                                       DEFAULT 0,
+    EstimatedArrivalDate DATE          NOT NULL,
+    OrderNumber          INT           NOT NULL,
+    WarehouseAddress     VARCHAR (30)  NOT NULL,
+    
+    PRIMARY KEY(OrderNumber, WarehouseAddress),
+    FOREIGN KEY(WarehouseAddress) REFERENCES WAREHOUSE(Address)
+    CHECK (ArrivalStatus == 0 OR 
+           ArrivalStatus == 1) 
+);
+
+CREATE TABLE ORDERVALUE (
+    ElementTypes    VARCHAR (100) NOT NULL,
+    QuantityOrdered VARCHAR (100) NOT NULL,
+    Value           INT           NOT NULL,
+    OrderNumber    INT    NOT NULL,
+    
+    PRIMARY KEY(ElementTypes, QuantityOrdered),
+    FOREIGN KEY(OrderNumber) REFERENCES WAREHOUSEORDER(OrderNumber)
+);
+
+CREATE TABLE REVIEW (
+    Date              DATE           NOT NULL,
+    EquipmentReviewed CHAR (30)      NOT NULL,
+    Rating            INT,
+    Comments          VARCHAR (1000),
+    MemberID          CHAR (30)      NOT NULL,
+    
+    PRIMARY KEY(MemberID, Date, EquipmentReviewed),
+    FOREIGN KEY(MemberID) REFERENCES COMMUNITYMEMBER(MemberID)
+);
+
+CREATE TABLE RENTALREQUEST (
+    RequestNo   INT NOT NULL,
+    MemberID    INT NOT NULL,
+    EquipmentID INT NOT NULL,
+    
+    PRIMARY KEY(RequestNo, MemberID),
+    FOREIGN KEY(MemberID) REFERENCES COMMUNITYMEMBER(MemberID)
+);
+
+CREATE TABLE FEES (
+    CheckOut    DATE NOT NULL,
+    CheckIn     DATE,
+    FeesCharged INT,
+    RequestNo   INT  NOT NULL,
+    
+    PRIMARY KEY(CheckOut, CheckIn, RequestNo),
+    FOREIGN KEY(RequestNo) REFERENCES RENTALREQUEST(RequestNo)
+);
+
+CREATE TABLE MODELWARRANTY (
+    ModelNumber     INT  NOT NULL,
+    ArrivalDate     DATE NOT NULL,
+    WarrantyExpDate DATE,
+    
+    PRIMARY KEY(ModelNumber, ArrivalDate),
+    FOREIGN KEY(ModelNumber) REFERENCES MODEL(ModelNumber)
+);
+
+CREATE TABLE EMPLOYEE (
+    EmployeeID   INT          NOT NULL,
+    WorkLocation VARCHAR (30) NOT NULL,
+    Name         VARCHAR (30) NOT NULL,
+    Salary       INT          NOT NULL,
+    Position     VARCHAR (30) NOT NULL,
+    
+    PRIMARY KEY(EmployeeID),
+    FOREIGN KEY(WorkLocation) REFERENCES WAREHOUSE(Address)
+);
+
+CREATE TABLE SUPPLIES (
+    SupplierName CHAR (30)    NOT NULL,
+    Address      VARCHAR (30) NOT NULL,
+    SerialNumber INT          NOT NULL,
+    
+    PRIMARY KEY(SupplierName, Address, SerialNumber),
+    FOREIGN KEY(SupplierName) REFERENCES SUPPLIER(SupplierName),
+    FOREIGN KEY(Address) REFERENCES SUPPLIER(Address),
+    FOREIGN KEY(SerialNumber) REFERENCES EQUIPMENT(SerialNumber),
+    FOREIGN KEY(SerialNumber) REFERENCES DRONE(SerialNumber)
+);

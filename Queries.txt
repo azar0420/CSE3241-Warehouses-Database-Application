@@ -1,0 +1,27 @@
+SELECT Description, EquipmentType
+FROM Equipment as E, Model as M
+WHERE E.ModelNumber  = M.ModelNumber AND M.Manufacturer = MANUFACTURER AND M.Year < YEAR;
+
+SELECT EquipmentType, Checkout
+FROM Equipment as E, CommunityMember as CM, RentalRequest as R, Fees as F
+WHERE R.EquipmentID = E.InventoryID AND E.EquipmentType = 'Watering' AND R.MemberID = CM.MemberID AND R.RequestNo = F.RequestNo;
+
+SELECT SerialNumber
+FROM Equipment
+WHERE StockCount < 2 AND EquipmentType = 'Gardening';
+
+SELECT MemberID, EquipmentID
+FROM CommunityMember as CM, Equipment as E, Drone as D, RentalRequest as R
+WHERE E.EquipmentType = 'Electric' AND E.FleetID = 102 AND CM.MemberID = R.MemberID AND R.EquipmentID = E.InventoryID
+GROUP BY CM.MemberID;
+
+SELECT MemberID, COUNT(*)
+FROM CommunityMember as CM, RentalRequest as R
+WHERE CM.MemberID = R.MemberID AND CM.MemberID = 40258;
+
+SELECT MemberID, COUNT(RequestNo)
+FROM CommunityMember as CM, RentalRequest as R, Equipment as E
+WHERE R.EquipmentID = E.InventoryID AND E.EquipmentType = 'Computer and Internet' AND R.MemberID = CM.MemberID
+GROUP BY CM.MemberID
+ORDER BY COUNT(RequestNo) DESC
+LIMIT 1;

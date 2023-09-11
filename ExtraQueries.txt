@@ -1,0 +1,15 @@
+Select Name, EquipmentReviewed, Comments
+From CommunityMember as m, Review as r
+Where m.MemberID = r.MemberID
+ORDER BY Name ASC;
+
+SELECT WarehouseAddress, COUNT(*) as NumMembers
+FROM COMMUNITYMEMBER as CM, WAREHOUSE as W
+WHERE CM.WarehouseAddress = W.Address
+GROUP BY W.Address
+ORDER BY NumMembers DESC;
+
+SELECT w.Address, Count(e.EmployeeID)
+From Warehouse as w, Employee as e
+Where e.WorkLocation = w.Address
+Group By w.Address
